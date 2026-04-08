@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
+import { put } from '@vercel/blob';
 import { getSession } from '@/lib/session';
 import { getSheets, updateCell } from '@/lib/google-sheets';
-import { uploadFileToDrive } from '@/lib/google-drive';
 
 export async function GET() {
   try {
@@ -55,11 +55,12 @@ export async function POST(request: NextRequest) {
 
     // Generate filename: {사번}_{이름}.{ext}
     const ext = file.name.split('.').pop() || 'jpg';
-    const fileName = `${session.employeeId}_${session.name}.${ext}`;
+    const fileName = `passport/${session.employeeId}_${session.name}.${ext}`;
 
-    // Upload to Google Drive
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await uploadFileToDrive(fileName, file.type, buffer);
+    // Upload to Vercel Blob
+    const blob = await put(fileName, file, {
+      access: 'public',
+    });
 
     // Update Sheets: 여권제출여부 column
     const sheets = getSheets();
@@ -68,7 +69,9 @@ export async function POST(request: NextRequest) {
       range: '대상자!1:1',
     });
     const headers = headerRes.data.values?.[0] || [];
-    const passportColIndex = headers.indexOf('여권제출여부');
+    const passportColIndex = headers.findIndex(
+      (h: string) => h.trim().replace(/\s+/g, ' ').includes('여권제출여부')
+    );
 
     if (passportColIndex >= 0) {
       const colLetter = getColumnLetter(passportColIndex);
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
     session.passportStatus = '제출';
     await session.save();
 
-    return Response.json({ ok: true });
+    return Response.json({ ok: true, url: blob.url });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
     console.error('Passport upload error:', errMsg);
