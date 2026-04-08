@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import GNB from '@/components/layout/GNB';
@@ -13,6 +13,22 @@ export default function AttendancePage() {
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/attendance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === '참석' || data.status === '불참') {
+          setSelected(data.status);
+        }
+        if (data.reason) {
+          setReason(data.reason);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setFetching(false));
+  }, []);
 
   const handleSubmit = async () => {
     if (!selected) return;
@@ -75,28 +91,34 @@ export default function AttendancePage() {
           <h1 className="text-2xl font-extrabold text-ok-navy mb-2">참석 여부 응답</h1>
           <p className="text-ok-gray-500 mb-8">해외연수 참석 의사를 선택해 주세요.</p>
 
-          <AttendanceSelector selected={selected} onSelect={setSelected} />
+          {fetching ? (
+            <p className="text-center text-ok-gray-500 py-10">불러오는 중...</p>
+          ) : (
+            <>
+              <AttendanceSelector selected={selected} onSelect={setSelected} />
 
-          {selected === '불참' && (
-            <div className="mt-6 animate-[fadeIn_0.3s_ease-out]">
-              <label className="block text-sm font-semibold text-ok-navy mb-2">불참 사유</label>
-              <textarea
-                placeholder="예: 개인 사정, 업무 일정 등"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl border border-ok-gray-300 focus:outline-none focus:border-ok-orange focus:ring-2 focus:ring-ok-orange/20 text-ok-navy placeholder:text-ok-gray-500 resize-none"
-              />
-            </div>
+              {selected === '불참' && (
+                <div className="mt-6 animate-[fadeIn_0.3s_ease-out]">
+                  <label className="block text-sm font-semibold text-ok-navy mb-2">불참 사유</label>
+                  <textarea
+                    placeholder="예: 개인 사정, 업무 일정 등"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border border-ok-gray-300 focus:outline-none focus:border-ok-orange focus:ring-2 focus:ring-ok-orange/20 text-ok-navy placeholder:text-ok-gray-500 resize-none"
+                  />
+                </div>
+              )}
+
+              <button
+                onClick={handleSubmit}
+                disabled={!selected || loading}
+                className="w-full mt-8 py-3 bg-ok-orange text-white font-semibold rounded-xl hover:bg-ok-orange-light disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? '저장 중...' : '저장하기'}
+              </button>
+            </>
           )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={!selected || loading}
-            className="w-full mt-8 py-3 bg-ok-orange text-white font-semibold rounded-xl hover:bg-ok-orange-light disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? '저장 중...' : '저장하기'}
-          </button>
         </div>
       </main>
       <Footer />
