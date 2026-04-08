@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/session';
-import { fetchSheetData, updateCell } from '@/lib/google-sheets';
+import { updateCell } from '@/lib/google-sheets';
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -22,23 +22,11 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Find the column letters for 참석여부 and 불참사유
-    const rows = await fetchSheetData();
-    const sheets = await import('@/lib/google-sheets').then(m => m.getSheets());
-    const headerRes = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: '대상자!1:1',
-    });
-    const headers = headerRes.data.values?.[0] || [];
-    const attendanceCol = getColumnLetter(headers.indexOf('참석여부'));
-    const reasonCol = getColumnLetter(headers.indexOf('25년도 불참사유'));
+    // N열: 참석여부, P열: 불참사유
+    await updateCell(`대상자!N${session.rowIndex}`, status);
 
-    if (attendanceCol) {
-      await updateCell(`대상자!${attendanceCol}${session.rowIndex}`, status);
-    }
-
-    if (status === '불참' && reason && reasonCol) {
-      await updateCell(`대상자!${reasonCol}${session.rowIndex}`, reason);
+    if (status === '불참' && reason) {
+      await updateCell(`대상자!P${session.rowIndex}`, reason);
     }
 
     // Update session
