@@ -2,11 +2,15 @@ import GNB from '@/components/layout/GNB';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/sections/HeroSection';
 import InfoCard from '@/components/ui/InfoCard';
+import { getSession } from '@/lib/session';
 
-export default function Home() {
+export default async function Home() {
+  const session = await getSession();
+  const isLoggedIn = !!session.name;
+
   return (
     <>
-      <GNB />
+      <GNB isLoggedIn={isLoggedIn} />
       <main className="flex-1">
         <HeroSection />
         <section className="max-w-[800px] mx-auto px-6 py-12">

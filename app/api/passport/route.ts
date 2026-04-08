@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate filename: {사번}_{이름}_여권.{ext}
+    // Generate filename: {사번}_{이름}.{ext}
     const ext = file.name.split('.').pop() || 'jpg';
-    const fileName = `${session.employeeId}_${session.name}_여권.${ext}`;
+    const fileName = `${session.employeeId}_${session.name}.${ext}`;
 
     // Upload to Google Drive
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -83,9 +83,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ ok: true });
   } catch (error) {
-    console.error('Passport upload error:', error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error('Passport upload error:', errMsg);
     return Response.json(
-      { error: '업로드 중 오류가 발생했습니다.' },
+      { error: '업로드 중 오류가 발생했습니다: ' + errMsg },
       { status: 500 }
     );
   }
