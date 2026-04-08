@@ -47,9 +47,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ ok: true });
   } catch (error) {
-    console.error('Auth error:', error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error('Auth error:', errMsg);
     return Response.json(
-      { error: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+      { error: '서버 오류: ' + errMsg },
       { status: 500 }
     );
   }
