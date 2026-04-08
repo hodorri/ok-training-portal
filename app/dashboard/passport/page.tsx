@@ -52,7 +52,7 @@ export default function PassportPage() {
   if (success) {
     return (
       <>
-        <GNB />
+        <GNB isLoggedIn={true} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <span className="text-5xl block mb-4">&#9989;</span>
@@ -67,7 +67,7 @@ export default function PassportPage() {
 
   return (
     <>
-      <GNB />
+      <GNB isLoggedIn={true} />
       <main className="flex-1">
         <div className="max-w-[600px] mx-auto px-6 py-10">
           <Link href="/dashboard" className="text-ok-gray-500 text-sm hover:text-ok-orange mb-6 inline-block">

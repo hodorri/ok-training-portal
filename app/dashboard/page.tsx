@@ -32,7 +32,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <GNB />
+      <GNB isLoggedIn={true} />
       <main className="flex-1">
         <div className="max-w-[800px] mx-auto px-6 py-10">
           <div className="mb-8">
